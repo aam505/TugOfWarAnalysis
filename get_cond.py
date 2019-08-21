@@ -68,9 +68,9 @@ for key in trial_cond_order.keys():
     #arrange order of columns
     newKeys=swapPositions(trial_cond_order[key].keys().values.tolist(),0,1)
     trial_cond_order[key] = trial_cond_order[key][list(newKeys)]
-
+    trial_cond_order[key]['Force']=['']
 
 #
 for key in trial_cond_order.keys():
-    trial_cond_order[key].to_csv(str(key)+'_trials.csv')
+    trial_cond_order[key].to_csv('\\Generated\\'+str(key)+'.csv')
 

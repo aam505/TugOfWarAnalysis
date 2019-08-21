@@ -1,6 +1,6 @@
-,Condition,Value
-0,Average UMA_F2,14.1
-1,Strong UMA_F4,15.3
-2,Strong UMA_F1,15.5
-3,Average UMA_F3,11.9
-4,Weak UMA_F4,20.3
+,Pid,Condition,Trial,Gender,Force
+0,8,2,1,female,14.1
+1,8,5,2,female,15.3
+2,8,4,3,female,15.5
+3,8,3,4,female,11.9
+4,8,1,5,female,20.3
