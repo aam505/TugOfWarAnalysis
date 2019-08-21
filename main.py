@@ -44,28 +44,35 @@ data=pull_data[pids[0]].copy()
 for i in range (1,len(pids)):
     data=data.append(pull_data[pids[i]], ignore_index = True)
 
-first = data.groupby('Pid')[['Pid', 'Force']].first().reset_index()
-data['NForce'] = data[['Pid', 'Force']].apply(lambda x: x['Force'] / first[first['Pid'] == x['Pid']]['Force'])
-
-print(first)
-def normalize(x):
-    first = x[x['Trial'] == 1]['Force'].iloc[0]
-    print(x['Force'], x['Force']/ first)
-    return  x['Force'] / first
-normed = data.groupby('Pid').apply(normalize).reset_index()
-print(normed)
-data['NForce'] = normed['Force']
+first = data.groupby('Pid')['Force'].first()
+def norm_force(x):
+    return x['Force'] / first.loc[x['Pid']]
+data['NForce'] = data[['Pid', 'Force']].apply(norm_force, axis=1)
 print(data)
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
-sns.catplot(x="Condition", y="ForceNormalized", hue="Gender", kind="bar", data=data);
+sns.catplot(x="Trial", y="NForce", hue="Gender", kind="bar", data=data);
+
+sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data);
 
 g = sns.catplot(x="Condition", y="Force", kind="violin", inner=None, data=data)
 sns.swarmplot(x="Condition", y="Force", color="k", size=5, data=data, ax=g.ax);
 
-def heatmaps():
-    sns.heatmap(results_by_index_challenge.iloc[:,1:], annot=True)    
-    sns.heatmap(results_by_index_ppul.iloc[:,1:], annot=True)    
-    #heatmap for results by condition challenge
-    #heatmap for results by condition challenge
+
+def heatmap_ppull_idx():
+    srted=data.sort_values("Trial",0)
+    xlabels=srted['Pid'].unique()
+    ppulls_trial=srted['PPull'].values.reshape(int(srted['PPull'].values.size/len(pids)),len(pids)).T
+    ax =sns.heatmap(ppulls_trial,annot=True,xticklabels=[1,2,3,4,5],yticklabels=xlabels)
+    ax.set(xlabel='Trial', ylabel='Pids')
+    plt.show()
+
+
+def heatmap_ppull_chal():
+    srted=data.sort_values("Pid",0)
+    xlabels=srted['Pid'].unique()
+    ppulls_trial=srted['PPull'].values.reshape(int(srted['PPull'].values.size/len(pids)),len(pids)).T
+    ax =sns.heatmap(ppulls_trial,annot=True,xticklabels=[1,2,3,4,5],yticklabels=xlabels)
+    ax.set(xlabel='Trial', ylabel='Pids')
+    plt.show()
