@@ -22,14 +22,14 @@ cond_mapping={'Average':'c2','Strong':'c1','Weak':'c3',
                 'Strong UMA_M6':3,
                 'Weak UMA_M7':1,
                 'Average UMA_M7':2}
-basepath="D:\\Master\\Thesis\\Results Scripts\\Repo\\logs\\**"
+basepath="E:\\Google Drive\\Thesis\\Experiment Log\\**"
 
 def load_csvs(path):
     p_dict={}
     p_dict_error={}
     """Returns a list with all files with the word/extension in it"""
     word="csv"
-    offset=43
+    offset=38
     for f in glob.glob(path):
         if word in f:
             df=pd.read_csv(f,index_col=False )[['Condition']]['Condition'].drop_duplicates().dropna()#keep top 5
@@ -44,10 +44,9 @@ def load_csvs(path):
         
     return p_dict,p_dict_error
 
-trial_cond_order,_=load_csvs(basepath)
+trial_cond_order,war=load_csvs(basepath)
 
-
-survey_data= pd.read_csv("res.csv").drop(columns=['Unnamed: 0'])
+survey_data= pd.read_csv("D:\\Master\\Thesis\\Results Scripts\\Repo\\res.csv")
 
 percep_data=pd.DataFrame()
 percep_data['Pid']=""
@@ -59,7 +58,7 @@ percep_data['RopeOwnership'] = ""
 
 for i in range(0,5):
     df=pd.DataFrame()
-    df['Pid']=survey_data['pid']
+    df['Pid']=survey_data['Pid']
     df['Trial']=[i+1]*len(survey_data.index.values.tolist())
     df['RopeRealism']=survey_data.iloc[:,5+4*i].copy()
     df['RopeOwnership']=survey_data.iloc[:,6+4*i].copy()
@@ -67,7 +66,7 @@ for i in range(0,5):
     df['Challenge']=survey_data.iloc[:,8+4*i].copy()
     percep_data=percep_data.append(df.copy())
 
-percep_data = percep_data[['Trial', 'Pid', 'RopeRealism', 'RopeOwnership', 'PPull','Challenge']]
+percep_data = percep_data[['Trial', 'Pid','RopeRealism', 'RopeOwnership', 'PPull','Challenge']]
 
 for key in trial_cond_order.keys():
     trial_cond_order[key]['Pid']=[key]*5
@@ -87,7 +86,8 @@ for key in trial_cond_order.keys():
     
     trial_cond_order[key]=pd.merge(trial_cond_order[key],percep_data[percep_data['Pid']==int(key)],on=['Pid','Trial'])
 
-for key in trial_cond_order.keys():
-    trial_cond_order[key].to_csv('D:\Master\Thesis\Results Scripts\Repo\\gen\\'+str(key)+'.csv')
+def log():
+    for key in trial_cond_order.keys():
+        trial_cond_order[key].to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\'+str(key)+'.csv')
 
 
