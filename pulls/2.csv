@@ -1,6 +1,6 @@
 ,Pid,Condition,Trial,Gender,Force,RopeRealism,RopeOwnership,PPull,Challenge
-0,2,3,1,female,,5,5,5,4
-1,2,2,2,female,,5,4,4,3
-2,2,4,3,female,,5,4,5,5
-3,2,1,4,female,,5,4,3,3
-4,2,5,5,female,,5,4,4,5
+0,2,3,1,female,34.2,5,5,5,4
+1,2,2,2,female,27.8,5,4,4,3
+2,2,4,3,female,27.4,5,4,5,5
+3,2,1,4,female,24.8,5,4,3,3
+4,2,5,5,female,25,5,4,4,5
