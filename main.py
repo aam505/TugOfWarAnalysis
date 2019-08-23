@@ -53,18 +53,59 @@ print(data)
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
-sns.catplot(x="Trial", y="NForce", hue="Gender", kind="bar", data=data);
+def errbar():
+    fig = plt.figure()
+    x = np.arange(10)
+    y = 2.5 * np.sin(x / 20 * np.pi)
+    yerr = np.linspace(0.05, 0.2, 10)
+    
+    plt.errorbar(x, y + 3, yerr=yerr, label='both limits (default)')
+    
+    plt.errorbar(x, y + 2, yerr=yerr, uplims=True, label='uplims=True')
+    
+    plt.errorbar(x, y + 1, yerr=yerr, uplims=True, lolims=True,
+                 label='uplims=True, lolims=True')
+    
+    upperlimits = [True, False] * 5
+    lowerlimits = [False, True] * 5
+    plt.errorbar(x, y, yerr=yerr, uplims=upperlimits, lolims=lowerlimits,
+                 label='subsets of uplims and lolims')
 
-sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data);
+plt.legend(loc='lower right')
+def plots():
+    df=data[['Condition','Force']].groupby(['Condition']).mean().reset_index()
 
-g = sns.catplot(x="Condition", y="Force", kind="violin", inner=None, data=data)
-sns.swarmplot(x="Condition", y="Force", color="k", size=5, data=data, ax=g.ax);
+    #force all data un normalized
+    g = sns.catplot(x="Condition", y="Force", kind="swarm", data=data)
+  
+    sns.lineplot('Condition', 'Force', data=df,marker='x',color="red") 
 
-sns.catplot(x="Condition", y="PPull", hue="Gender", kind="bar", data=data);
-sns.catplot(x="Condition", y="Challenge", hue="Gender", kind="bar", data=data);
+    g = sns.catplot(x="Condition", y="Force", kind="violin", inner=None, data=data)
+    g =sns.swarmplot(x="Condition", y="Force", color="k", size=5, data=data, ax=g.ax)
+    g.set_axis_labels("Condition","Force")
 
+    g = sns.lineplot(x="Condition", y="Force",err_style="bars", data=df)
+    g.set_yticks(range(0,20))
+
+    #force all data normalized
+    g = sns.catplot(x="Condition", y="NForce", kind="swarm", data=data)
+    g.set_axis_labels("Condition","NForce")
+
+    ax= sns.catplot(x="Trial", y="NForce", hue="Gender", kind="bar", data=data)
+    #height=8.27, aspect=11.7/8.27 height=10
+    ax.set_axis_labels("Trial","NForce")
+
+    sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data);
+    
+    
 sns.catplot(x="Condition", y="Challenge", kind="bar", data=data);
 sns.catplot(x="Condition", y="PPull", kind="bar", data=data);
+
+sns.catplot(x="Condition", y="Challenge",hue='Gender', kind="bar", data=data);
+sns.catplot(x="Condition", y="PPull", hue='Gender',kind="bar", data=data);
+
+sns.catplot(x="Condition", y="Realism",kind="bar", data=data);
+
 
 
 def correlation():
@@ -72,11 +113,6 @@ def correlation():
     stats.ttest_ind(d['PPull'],d['Challenge'], equal_var=False)
     stats.ttest_ind(d['PPull'],d['Force'])
     
-    
-def bar_chall_ppull():
-    df=data.melt('Trial',var_name='Challenge',value_name='PPull')
-    ax=sns.barplot(x='date', y='b', hue='a', data=data)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
     
 def heatmap_ppull_idx():
     srted=data.sort_values("Trial",0)
