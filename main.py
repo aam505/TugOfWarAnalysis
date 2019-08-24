@@ -27,6 +27,10 @@ def load_csvs(path):
     return p_dict
 
 pull_data=load_csvs("D:\\Master\\Thesis\\Results Scripts\\Repo\\pulls\\**")
+gaze_data =pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\gaze_targets.csv',index_col=False)
+
+misc_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\misc_data.csv')
+presence_ownership_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\presence_owbership_data.csv')
 
 pids = list(pull_data.keys()) 
 
@@ -53,6 +57,17 @@ print(data)
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
+def gaze_plots():
+    c=pd.DataFrame(gaze_data['GazeTarget'].value_counts())
+    c['GazeTarget']=c['GazeTarget']/c['GazeTarget'].sum()
+    
+    f, ax = plt.subplots()
+    c.plot(kind='pie', subplots=True, figsize=(8, 8),labels=None,ax=ax)
+    ax.set_ylabel("Gaze % ")
+    ax.legend(bbox_to_anchor=(1, 1),labels=c.index)   
+    
+    sns.set_color_codes("pastel")
+    sns.barplot(x="GazeTarget", y="index",data= c, label="Total", color="b")
 def errbar():
     fig = plt.figure()
     x = np.arange(10)
@@ -95,17 +110,29 @@ def plots():
     #height=8.27, aspect=11.7/8.27 height=10
     ax.set_axis_labels("Trial","NForce")
 
+
+    
+def by_cond():
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data);
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data);
+
+    sns.catplot(x="Condition", y="Challenge",hue='Gender', kind="bar", data=data)
+    sns.catplot(x="Condition", y="PPull", hue='Gender',kind="bar", data=data)
+    
+    sns.catplot(x="Condition", y="Force", kind="bar", data=data);
     sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data);
     
+
+def by_trial():
+    sns.catplot(x="Trial", y="Challenge", kind="bar", data=data)
+    sns.catplot(x="Trial", y="PPull", kind="bar", data=data)
+
+    sns.catplot(x="Trial", y="Challenge",hue='Gender', kind="bar", data=data)
+    sns.catplot(x="Trial", y="PPull", hue='Gender',kind="bar", data=data)
     
-sns.catplot(x="Condition", y="Challenge", kind="bar", data=data);
-sns.catplot(x="Condition", y="PPull", kind="bar", data=data);
-
-sns.catplot(x="Condition", y="Challenge",hue='Gender', kind="bar", data=data);
-sns.catplot(x="Condition", y="PPull", hue='Gender',kind="bar", data=data);
-
-sns.catplot(x="Condition", y="Realism",kind="bar", data=data);
-
+    sns.catplot(x="Trial", y="Force", kind="bar", data=data);
+    sns.catplot(x="Trial", y="Force", hue='Gender',kind="bar", data=data);
+    
 
 
 def correlation():
