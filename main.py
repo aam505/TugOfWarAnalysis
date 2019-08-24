@@ -30,7 +30,7 @@ pull_data=load_csvs("D:\\Master\\Thesis\\Results Scripts\\Repo\\pulls\\**")
 gaze_data =pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\gaze_targets.csv',index_col=False)
 
 misc_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\misc_data.csv')
-presence_ownership_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\presence_owbership_data.csv')
+avatar_rating_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\avatar_rating_data.csv')
 
 pids = list(pull_data.keys()) 
 
@@ -57,7 +57,13 @@ print(data)
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
+def misc_plots():
+    c.plot(kind='pie', figsize=(8, 8))
+   
+    
 def gaze_plots():
+    c=pd.DataFrame(misc_data['VRUse'].value_counts())
+
     c=pd.DataFrame(gaze_data['GazeTarget'].value_counts())
     c['GazeTarget']=c['GazeTarget']/c['GazeTarget'].sum()
     
@@ -68,25 +74,9 @@ def gaze_plots():
     
     sns.set_color_codes("pastel")
     sns.barplot(x="GazeTarget", y="index",data= c, label="Total", color="b")
-def errbar():
-    fig = plt.figure()
-    x = np.arange(10)
-    y = 2.5 * np.sin(x / 20 * np.pi)
-    yerr = np.linspace(0.05, 0.2, 10)
     
-    plt.errorbar(x, y + 3, yerr=yerr, label='both limits (default)')
-    
-    plt.errorbar(x, y + 2, yerr=yerr, uplims=True, label='uplims=True')
-    
-    plt.errorbar(x, y + 1, yerr=yerr, uplims=True, lolims=True,
-                 label='uplims=True, lolims=True')
-    
-    upperlimits = [True, False] * 5
-    lowerlimits = [False, True] * 5
-    plt.errorbar(x, y, yerr=yerr, uplims=upperlimits, lolims=lowerlimits,
-                 label='subsets of uplims and lolims')
-
 plt.legend(loc='lower right')
+
 def plots():
     df=data[['Condition','Force']].groupby(['Condition']).mean().reset_index()
 

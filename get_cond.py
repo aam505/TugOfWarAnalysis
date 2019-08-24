@@ -59,6 +59,8 @@ trial_cond_order,war,df_gaze=load_csvs()
 
 survey_data= pd.read_csv("D:\\Master\\Thesis\\Results Scripts\\Repo\\res.csv")
 
+avatar_appearance_survey_data_full = pd.read_csv("D:\\Master\\Thesis\\Results Scripts\\Repo\\appearance.csv",index_col=False).dropna(how='all')
+
 percep_data=pd.DataFrame()
 percep_data['Pid']=""
 percep_data['Trial'] = ""
@@ -73,17 +75,30 @@ misc_data['Gender']= survey_data.iloc[:,1].copy()
 misc_data['VRUse']= survey_data.iloc[:,3].copy()
 misc_data['TugOfWarUse']= survey_data.iloc[:,4].copy()
 
-presence_ownership_data=pd.DataFrame()
-presence_ownership_data['Condition']=''    
-presence_ownership_data['Attractive']=''
-presence_ownership_data['Strong']=''
-presence_ownership_data['Intelligent']=''
-presence_ownership_data['Intimidating']=''
-presence_ownership_data['Pid']=''
-presence_ownership_data['Gender']=''
-presence_ownership_data=presence_ownership_data[['Pid','Gender','Condition','Strong','Intimidating','Attractive','Intelligent']]
+avatar_rating_data=pd.DataFrame()
+avatar_rating_data['Condition']=''    
+avatar_rating_data['Attractive']=''
+avatar_rating_data['Strong']=''
+avatar_rating_data['Intelligent']=''
+avatar_rating_data['Intimidating']=''
+avatar_rating_data['Pid']=''
+avatar_rating_data['Gender']=''
+avatar_rating_data['Weighted']=''
+
+survey_rating_data=pd.DataFrame()
+survey_rating_data['Condition']=''    
+survey_rating_data['Attractive']=''
+survey_rating_data['Strong']=''
+survey_rating_data['Intelligent']=''
+survey_rating_data['Intimidating']=''
+survey_rating_data['Pid']=''
+survey_rating_data['Gender']=''
+survey_rating_data['Weighted']=''
+
+avatar_rating_data=avatar_rating_data[['Pid','Gender','Condition','Weighted','Strong','Intimidating','Attractive','Intelligent']]
 
 name_mapping={0:'Attractive',1:'Strong',2:'Intelligent',3:'Intimidating'}
+condition_mapping={0:5,1:3,2:1,3:4, 4:2}
 
 for i in range(0,5):
     df=pd.DataFrame()
@@ -100,8 +115,8 @@ for i in range(0,5):
     df_m=pd.DataFrame()
     df_f=pd.DataFrame()
     
-    df_f['Condition']=[i+1]*survey_data[survey_data['Please select your gender.']=='Female']['Pid'].size
-    df_m['Condition']=[i+1]*survey_data[survey_data['Please select your gender.']=='Male']['Pid'].size
+    df_f['Condition']=[condition_mapping[i]]*survey_data[survey_data['Please select your gender.']=='Female']['Pid'].size
+    df_m['Condition']=[condition_mapping[i]]*survey_data[survey_data['Please select your gender.']=='Male']['Pid'].size
     
     df_f['Pid']=survey_data[survey_data['Please select your gender.']=='Female']['Pid'].tolist()
     df_f['Gender']=survey_data[survey_data['Please select your gender.']=='Female']['Please select your gender.'].tolist()
@@ -112,18 +127,22 @@ for i in range(0,5):
     for j in range(0,4):
         df_f[name_mapping[j]]=survey_data[survey_data['Please select your gender.']=='Female'].iloc[:,40+i*4+j].tolist()
         df_m[name_mapping[j]]=survey_data[survey_data['Please select your gender.']=='Male'].iloc[:,60+i*4+j].tolist()
+    
+    df_f['Weighted']=df_f['Intimidating']*0.5+df_f['Strong']*0.5
+    df_m['Weighted']=df_m['Intimidating']*0.5+df_m['Strong']*0.5  
+    
+    df_m=df_m[['Pid','Gender','Condition','Weighted','Strong','Intimidating','Attractive','Intelligent']]
+    df_f=df_f[['Pid','Gender','Condition','Weighted','Strong','Intimidating','Attractive','Intelligent']]    
    
-    df_m=df_m[['Pid','Gender','Condition','Strong','Intimidating','Attractive','Intelligent']]
-    df_f=df_f[['Pid','Gender','Condition','Strong','Intimidating','Attractive','Intelligent']]    
-    presence_ownership_data=presence_ownership_data.append(df_f.copy())
-    presence_ownership_data=presence_ownership_data.append(df_m.copy())
+    
+    avatar_rating_data=avatar_rating_data.append(df_f.copy())
+    avatar_rating_data=avatar_rating_data.append(df_m.copy())
 
         
 for i in range(25,40):
     #adding misc data
     if(i!=36):
-        [survey_data.iloc[:,i].name] = survey_data[survey_data.iloc[:,i].name].astype(int)
-    
+        misc_data[survey_data.iloc[:,i].name] = survey_data.iloc[:,i].tolist()
     
 percep_data = percep_data[['Trial', 'Pid','RopeRealism', 'RopeOwnership', 'PPull','Challenge']]
 
@@ -152,4 +171,5 @@ def log():
     
     df_gaze.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\gaze_targets.csv')
     misc_data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\misc_data.csv')
-    presence_ownership_data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\presence_owbership_data.csv')
+    
+    avatar_rating_data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\avatar_rating_data.csv')
