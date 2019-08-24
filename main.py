@@ -27,10 +27,10 @@ def load_csvs(path):
     return p_dict
 
 pull_data=load_csvs("D:\\Master\\Thesis\\Results Scripts\\Repo\\pulls\\**")
-gaze_data =pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\gaze_targets.csv',index_col=False)
+gaze_data =pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\other\\gaze_targets.csv',index_col=False)
 
-misc_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\misc_data.csv')
-avatar_rating_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\avatar_rating_data.csv')
+misc_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\other\\misc_data.csv')
+avatar_rating_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\other\\avatar_rating_data.csv')
 
 pids = list(pull_data.keys()) 
 
@@ -53,7 +53,7 @@ first = data.groupby('Pid')['Force'].first()
 def norm_force(x):
     return x['Force'] / first.loc[x['Pid']]
 data['NForce'] = data[['Pid', 'Force']].apply(norm_force, axis=1)
-print(data)
+
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
@@ -62,7 +62,7 @@ def misc_plots():
    
     
 def gaze_plots():
-    c=pd.DataFrame(misc_data['VRUse'].value_counts())
+    c=pd.DataFrame(misc_data['GazeTarget'].value_counts())
 
     c=pd.DataFrame(gaze_data['GazeTarget'].value_counts())
     c['GazeTarget']=c['GazeTarget']/c['GazeTarget'].sum()
@@ -75,7 +75,6 @@ def gaze_plots():
     sns.set_color_codes("pastel")
     sns.barplot(x="GazeTarget", y="index",data= c, label="Total", color="b")
     
-plt.legend(loc='lower right')
 
 def plots():
     df=data[['Condition','Force']].groupby(['Condition']).mean().reset_index()
