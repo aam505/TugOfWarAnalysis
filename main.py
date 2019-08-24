@@ -8,6 +8,8 @@ import matplotlib.gridspec as gridspec
 from collections import OrderedDict 
 from collections import deque
 from scipy import stats
+from numpy import median
+from matplotlib import rc
 
 #################################################################################3
 # Swap function 
@@ -33,6 +35,7 @@ misc_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\other\\mi
 avatar_rating_data=pd.read_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\gen\\other\\avatar_rating_data.csv')
 
 pids = list(pull_data.keys()) 
+#pids=[int(x) for x in pids]
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
@@ -41,7 +44,10 @@ min_max_scaler = preprocessing.MinMaxScaler()
 
 #Make pull by condition and pull by force tables for all participants
 for i in range (0,len(pids)):
-     pull_data[pids[i]]['ForceNormalized'] = min_max_scaler.fit_transform(pd.DataFrame( pull_data[pids[i]].iloc[:,-1]))
+     for key in pull_data[pids[i]].keys():
+         if(key!='Gender' and key!='Pid'):
+             pull_data[pids[i]][key] = pull_data[pids[i]][key].astype('int64')
+     pull_data[pids[i]]['ForceNormalized'] = min_max_scaler.fit_transform(pd.DataFrame(pull_data[pids[i]]['Force'].values))
 
 
 #aggregate
@@ -58,8 +64,63 @@ data['NForce'] = data[['Pid', 'Force']].apply(norm_force, axis=1)
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
 
 def misc_plots():
-    c.plot(kind='pie', figsize=(8, 8))
-   
+    
+    ratings=[1,2,3,4,5]
+    #misc_data.groupby('VRUse').size().plot(kind='pie', figsize=(8, 8),autopct='%1.1f%%',startangle=90,shadow=False, labels=list(misc_data.groupby('VRUse').size().index))
+    keys =  misc_data.keys()
+    presence_data=misc_data[[keys[5],keys[6],keys[7],keys[8],keys[9]]]
+    
+    presence_mean = presence_data.mean().reset_index()
+    presence_std= presence_data.std().reset_index()
+    presence_median = presence_data.median().reset_index()
+    
+    presence_mean=presence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_std=presence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_median=presence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+
+    presence_data.to_numpy().sum()
+    
+    ax = presence_median.plot.bar(x='index',legend=False)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Median Rating")
+    plt.show()
+    
+     
+    ownership_data=misc_data[[keys[10],keys[11],keys[12],keys[13],keys[14],keys[15]]]
+
+    ownership_mean = ownership_data.mean().reset_index()
+    ownership_std= ownership_data.std().reset_index()
+    ownership_median = ownership_data.median().reset_index()
+    
+    ownership_mean=ownership_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
+ 
+    ax = ownership_median.plot.bar(x='index',legend=False)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Median Rating")
+    ownership_data.to_numpy().mean()
+    
+    copresence_data=misc_data[[keys[16],keys[17],keys[18]]]
+
+    copresence_mean = copresence_data.mean().reset_index()
+    copresence_std= copresence_data.std().reset_index()
+    copresence_median = copresence_data.median().reset_index()
+    
+    copresence_mean=copresence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_std=copresence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_median=copresence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    
+    ax = copresence_median.plot.bar(x='index',legend=False)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Median rating")
+    
+    copresence_data.to_numpy().mean()
+    
+
+    g = sns.catplot(x="Trial", y="NForce", kind="bar", data=presence_data)
+    g.set_ylabel("Gaze % ")
+
     
 def gaze_plots():
     c=pd.DataFrame(misc_data['GazeTarget'].value_counts())
@@ -75,54 +136,205 @@ def gaze_plots():
     sns.set_color_codes("pastel")
     sns.barplot(x="GazeTarget", y="index",data= c, label="Total", color="b")
     
-
+sns.set(style="whitegrid")
 def plots():
-    df=data[['Condition','Force']].groupby(['Condition']).mean().reset_index()
-
     #force all data un normalized
     g = sns.catplot(x="Condition", y="Force", kind="swarm", data=data)
-  
-    sns.lineplot('Condition', 'Force', data=df,marker='x',color="red") 
-
+    
     g = sns.catplot(x="Condition", y="Force", kind="violin", inner=None, data=data)
     g =sns.swarmplot(x="Condition", y="Force", color="k", size=5, data=data, ax=g.ax)
     g.set_axis_labels("Condition","Force")
 
-    g = sns.lineplot(x="Condition", y="Force",err_style="bars", data=df)
-    g.set_yticks(range(0,20))
-
     #force all data normalized
     g = sns.catplot(x="Condition", y="NForce", kind="swarm", data=data)
-    g.set_axis_labels("Condition","NForce")
-
+    g = sns.catplot(x="Condition", y="ForceNormalized", kind="swarm", data=data)
+   
+    
+    ax= sns.catplot(x="Trial", y="Force", kind="bar", data=data)
+    ax= sns.catplot(x="Trial", y="ForceNormalized",kind="bar", data=data)
+    ax= sns.catplot(x="Trial", y="NForce", kind="bar", data=data)
+    
+    ax= sns.catplot(x="Condition", y="Force", kind="bar", data=data)
+    ax= sns.catplot(x="Condition", y="ForceNormalized",kind="bar", data=data)
+    ax= sns.catplot(x="Condition", y="NForce", kind="bar", data=data)
+    
+    
+    ax= sns.catplot(x="Trial", y="Force", hue="Gender", kind="bar", data=data)
+    ax= sns.catplot(x="Trial", y="ForceNormalized", hue="Gender", kind="bar", data=data)
     ax= sns.catplot(x="Trial", y="NForce", hue="Gender", kind="bar", data=data)
-    #height=8.27, aspect=11.7/8.27 height=10
-    ax.set_axis_labels("Trial","NForce")
-
+    
+    ax= sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data)
+    ax= sns.catplot(x="Condition", y="ForceNormalized", hue="Gender", kind="bar", data=data)
+    ax= sns.catplot(x="Condition", y="NForce", hue="Gender", kind="bar", data=data)
+    
 
     
 def by_cond():
-    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data);
+
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data,estimator=np.median,hue='Gender')
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data,hue='Gender')
+    
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data,estimator=np.median,hue='Gender')
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data,hue='Gender')
+    
+    
+    sns.catplot(x="Trial", y="Challenge", kind="bar", data=data,estimator=np.median,hue='Gender')
+    sns.catplot(x="Trial", y="Challenge", kind="bar", data=data,hue='Gender')
+    
+    sns.catplot(x="Trial", y="PPull", kind="bar", data=data,estimator=np.median,hue='Gender')
+    sns.catplot(x="Trial", y="PPull", kind="bar", data=data,hue='Gender')
+    
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data)
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data)
+    
+        
+    sns.catplot(x="Trial", y="Challenge", kind="bar", data=data)
+    sns.catplot(x="Trial", y="PPull", kind="bar", data=data)
+    
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data,estimator=np.median)
+    
+    
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data,estimator=np.mean)
+
+    sns.countplot(x="Condition",  hue='Challenge',data=data,palette="ch:2.5,-.2,dark=.3")
+    sns.countplot(x="Condition",  hue='PPull',data=data,palette="ch:2.5,-.2,dark=.3")
+
     sns.catplot(x="Condition", y="PPull", kind="bar", data=data);
 
     sns.catplot(x="Condition", y="Challenge",hue='Gender', kind="bar", data=data)
     sns.catplot(x="Condition", y="PPull", hue='Gender',kind="bar", data=data)
     
-    sns.catplot(x="Condition", y="Force", kind="bar", data=data);
-    sns.catplot(x="Condition", y="Force", hue="Gender", kind="bar", data=data);
-    
-
-def by_trial():
     sns.catplot(x="Trial", y="Challenge", kind="bar", data=data)
     sns.catplot(x="Trial", y="PPull", kind="bar", data=data)
 
     sns.catplot(x="Trial", y="Challenge",hue='Gender', kind="bar", data=data)
     sns.catplot(x="Trial", y="PPull", hue='Gender',kind="bar", data=data)
     
-    sns.catplot(x="Trial", y="Force", kind="bar", data=data);
-    sns.catplot(x="Trial", y="Force", hue='Gender',kind="bar", data=data);
+    ax= sns.catplot(x="Condition", y="ForceNormalized", kind="bar", data=data[data['Trial']==1],hue='Gender')
+    ax= sns.catplot(x="Condition", y="ForceNormalized", kind="bar", data=data[data['Trial']==1],hue='Gender')
     
+    ax= sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial']==1],hue='Gender')
+    ax= sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial']==1])
 
+    
+    sns.catplot(x="Condition", y="Trial", kind="bar", data=data[data['Trial'].isin([1,2,3])])
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial'].isin([1,2,3])],hue='Gender').
+    
+    
+    sns.countplot(x="Condition", hue="Trial",data=data)
+    
+    sns.countplot(x="Condition", hue="Trial",data=data[data['Gender']=='female'])
+    sns.countplot(x="Trial", hue="Condition",data=data)
+    sns.countplot(x="Condition", y="Trial", kind="bar", data=data,hue='Gender')
+     
+    ax= sns.catplot(x="Condition", y="Force", kind="bar", data=data[data['Trial']==4])
+
+def stacked_challenge():
+ 
+    labels = ['1 (Weak)','2','3 (Average)','4','5 (Strong)']
+    ratings=[1,2,3,4,5]
+    levels=[1,2,3,4,5]
+    category_names = ['1 (Not at all)','2','3','4','5 (Very challenging)']
+
+    a=data.groupby('Condition')['Challenge'].value_counts()
+    
+    cond1=[0,0,0,0,0]
+    cond2=[0,0,0,0,0]
+    cond3=[0,0,0,0,0]
+    cond4=[0,0,0,0,0]
+    cond5=[0,0,0,0,0]
+    
+    for key in a.keys():
+        if (key[0]==1):
+            cond1[key[1]-1] = a[key]
+        if (key[0]==2):
+            cond2[key[1]-1] = a[key]
+        if (key[0]==3):
+            cond3[key[1]-1] = a[key]
+        if (key[0]==4):
+            cond4[key[1]-1] = a[key]              
+        if (key[0]==5):
+            cond5[key[1]-1] = a[key]    
+            
+    data1 = np.array(list([cond1,cond2,cond3,cond4,cond5]))
+    data_cum = data1.cumsum(axis=1)
+    category_colors = plt.get_cmap('RdYlGn')(np.linspace(0.15, 0.85, data1.shape[1]))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.invert_yaxis()
+    #ax.xaxis.set_visible(False)
+    ax.set_xlim(0, np.sum(data1, axis=1).max())
+    
+    for i, (colname, color) in enumerate(zip(category_names, category_colors)):
+        widths = data1[:, i]
+        widths = widths.astype(dtype='float32')
+        starts = data_cum[:, i] - widths
+        ax.barh(labels, widths, left=starts, height=0.5, label=colname, color=color)
+        #ax.set_ylabel('This avatar looks')
+        xcenters = starts + widths / 2
+        r, g, b, _ = color
+        text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
+        for y, (x, c) in enumerate(zip(xcenters, widths)):
+            if(int(c)!=0):
+                ax.text(x, y, str(int(c)), ha='center', va='center',color=text_color)
+            else:
+                ax.text(x, y, '', ha='center', va='center',color=text_color)
+    fig.subplots_adjust(left=0.2)
+    ax.set_ylabel("Condition")
+    ax.set_xlabel('Challenging rating counts')
+    ax.legend(ncol=len(category_names), bbox_to_anchor=(0, 1),  loc='lower left', fontsize='small')
+
+def stacked_ppull():
+    labels = ['1 (Weak)','2','3 (Average)','4','5 (Strong)']
+    ratings=[1,2,3,4,5]
+    levels=[1,2,3,4,5]
+    category_names = ['1 (Not at all)','2','3','4','5 (Very much)']
+
+    a=data.groupby('Condition')['PPull'].value_counts()
+    
+    cond1=[0,0,0,0,0]
+    cond2=[0,0,0,0,0]
+    cond3=[0,0,0,0,0]
+    cond4=[0,0,0,0,0]
+    cond5=[0,0,0,0,0]
+    
+    for key in a.keys():
+        if (key[0]==1):
+            cond1[key[1]-1] = a[key]
+        if (key[0]==2):
+            cond2[key[1]-1] = a[key]
+        if (key[0]==3):
+            cond3[key[1]-1] = a[key]
+        if (key[0]==4):
+            cond4[key[1]-1] = a[key]              
+        if (key[0]==5):
+            cond5[key[1]-1] = a[key]    
+            
+    data1 = np.array(list([cond1,cond2,cond3,cond4,cond5]))
+    data_cum = data1.cumsum(axis=1)
+    category_colors = plt.get_cmap('RdYlGn')(np.linspace(0.15, 0.85, data1.shape[1]))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.invert_yaxis()
+    #ax.xaxis.set_visible(False)
+    ax.set_xlim(0, np.sum(data1, axis=1).max())
+    
+    for i, (colname, color) in enumerate(zip(category_names, category_colors)):
+        widths = data1[:, i]
+        widths = widths.astype(dtype='float32')
+        starts = data_cum[:, i] - widths
+        ax.barh(labels, widths, left=starts, height=0.5, label=colname, color=color)
+        #ax.set_ylabel('This avatar looks')
+        xcenters = starts + widths / 2
+        r, g, b, _ = color
+        text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
+        for y, (x, c) in enumerate(zip(xcenters, widths)):
+            if(int(c)!=0):
+                ax.text(x, y, str(int(c)), ha='center', va='center',color=text_color)
+            else:
+                ax.text(x, y, '', ha='center', va='center',color=text_color)
+    fig.subplots_adjust(left=0.2)
+    ax.set_ylabel("Condition")
+    ax.set_xlabel('PPull rating counts')
+    ax.legend(ncol=len(category_names), bbox_to_anchor=(0, 1),  loc='lower left', fontsize='small')
 
 def correlation():
     d = data.sort_values(['Condition','Pid'])
@@ -131,80 +343,21 @@ def correlation():
     
     
 def heatmap_ppull_idx():
-    srted=data.sort_values("Trial",0)
+
+    srted=data.sort_values(["Condition",'Pid'],0)
     xlabels=srted['Pid'].unique()
     ppulls_trial=srted['PPull'].values.reshape(int(srted['PPull'].values.size/len(pids)),len(pids)).T
-    ax =sns.heatmap(ppulls_trial,annot=True,xticklabels=['1st','2nd','3rd','4th','5th'],yticklabels=xlabels,center=5)
-    ax.set(xlabel='Trial', ylabel='Pids')
+    ax =sns.heatmap(ppulls_trial,annot=True,xticklabels=['1 (Weakest)','2','3','4','5 (Strongest)'],yticklabels=xlabels,center=5)
+    ax.set(xlabel='Condition', ylabel='Pids')
     plt.show()
 
 
-def heatmap_ppull_chal():
-    srted=data.sort_values("Trial",0)
-    xlabels=srted['Pid'].unique()
+def heatmap_chal():
+    srted=data.sort_values(["Condition",'Pid'],0)
+    xlabels=srted['Pid'].unique().T
     ppulls_trial=srted['Challenge'].values.reshape(int(srted['Challenge'].values.size/len(pids)),len(pids)).T
     ax =sns.heatmap(ppulls_trial,annot=True,xticklabels=['1 (Weakest)','2','3','4','5 (Strongest)'],yticklabels=xlabels,center=5)
-    ax.set(xlabel='Challenge', ylabel='Pids')
+    ax.set(xlabel='Condition', ylabel='Pids')
     plt.show()
     
-    
-def stacked_ppull_idx():
-    df=pd.DataFrame()
-    df.set
-    
-    data['PPull'].value_counts()
-    data[data['Condition']==1]['Challenge'].value_counts() #-get them per condition
-    
-    data.groupby(['Challenge', 'PPull']).size().unstack().plot(kind='bar', stacked=True)
-    df=data[['Challenge','PPull','Trial','Condition']].groupby(['Challenge', 'PPull']).count()
-    
-    df=data[['Challenge','PPull','Trial','Condition']].groupby(['Condition', 'PPull'])
-     
-     
-idx = np.asarray([i for i in range(5)])
-labels = np.asarray([i+1 for i in range(5)])
-
-#for key in df_avatars_f.keys():
-#   df_avatars_f[key].plot.barh(stacked = True)
-
-# gets occurence of ratings df_avatars_f[0][df_avatars_f[0].keys()[0]].value_counts()
-
-#category_names = ['1 (Strongly disagree)', '2','3 ','4', ' 5 (Strongly agree)']
-#ratings=[1,2,3,4,5]
-#levels=[1,2,3,4,5]
-#labels = ['Attractive','Strong','Intelligent','Intimidating']
-#
-#j=0
-#for key in df_avatars_f.keys():
-#    j=j+1
-#    results ={}
-#    for key1 in df_avatars_f[key].keys():
-#       results[key1]=df_avatars_f[key][key1].value_counts().sort_index().reindex([1,2,3,4,5],fill_value=0).values
-#    data = np.array(list(results.values()))
-#    data_cum = data.cumsum(axis=1)
-#    category_colors = plt.get_cmap('RdYlGn')(np.linspace(0.15, 0.85, data.shape[1]))
-#    fig, ax = plt.subplots(figsize=(8, 5))
-#    ax.invert_yaxis()
-#    #ax.xaxis.set_visible(False)
-#    ax.set_xlim(0, np.sum(data, axis=1).max())
-#    
-#    for i, (colname, color) in enumerate(zip(category_names, category_colors)):
-#        widths = data[:, i]
-#        widths = widths.astype(dtype='float32')
-#        starts = data_cum[:, i] - widths
-#        ax.barh(labels, widths, left=starts, height=0.5, label=colname, color=color)
-#        #ax.set_ylabel('This avatar looks')
-#        ax.set_xlabel('Rating counts')
-#        xcenters = starts + widths / 2
-#        r, g, b, _ = color
-#        text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
-#        for y, (x, c) in enumerate(zip(xcenters, widths)):
-#            if(int(c)!=0):
-#                ax.text(x, y, str(int(c)), ha='center', va='center',color=text_color)
-#            else:
-#                ax.text(x, y, '', ha='center', va='center',color=text_color)
-#    fig.subplots_adjust(left=0.2)
-#    ax.legend(ncol=len(category_names), bbox_to_anchor=(0, 1),  loc='lower left', fontsize='small')
-#    fig.savefig('avatar_f'+str(j)+'.png')
-#    plt.close(fig) 
-#    
+  
