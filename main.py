@@ -48,6 +48,8 @@ for i in range (0,len(pids)):
          if(key!='Gender' and key!='Pid'):
              pull_data[pids[i]][key] = pull_data[pids[i]][key].astype('int64')
      pull_data[pids[i]]['ForceNormalized'] = min_max_scaler.fit_transform(pd.DataFrame(pull_data[pids[i]]['Force'].values))
+     #pull_data[pids[i]]['MaxDifference'] = pd.DataFrame(pull_data[pids[i]]['Force'].values)
+     pull_data[pids[i]]['MaxForceDif']=pull_data[pids[i]]['Force'].values.max()-pull_data[pids[i]]['Force'].values.min()
 
 
 #aggregate
@@ -62,6 +64,7 @@ data['NForce'] = data[['Pid', 'Force']].apply(norm_force, axis=1)
 
 
 #data.to_csv('D:\\Master\\Thesis\\Results Scripts\\Repo\\data.csv')
+data_stable_maxdif=data[data['MaxForceDif']<12] #3 users
 
 def misc_plots():
     
@@ -80,9 +83,9 @@ def misc_plots():
 
     presence_data.to_numpy().sum()
     
-    ax = presence_median.plot.bar(x='index',legend=False)
+    ax = presence_median.plot.bar(x='index',legend=False,yerr=presence_std[0].values)
     ax.set_xlabel('Question')
-    ax.set_ylabel("Median Rating")
+    ax.set_ylabel("Mean Rating and Std")
     plt.show()
     
      
@@ -92,13 +95,14 @@ def misc_plots():
     ownership_std= ownership_data.std().reset_index()
     ownership_median = ownership_data.median().reset_index()
     
-    ownership_mean=ownership_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
-    ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
-    ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q5',6:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_mean=ownership_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
  
     ax = ownership_median.plot.bar(x='index',legend=False)
     ax.set_xlabel('Question')
-    ax.set_ylabel("Median Rating")
+    ax.set_ylabel("Median Rating ")
+    
     ownership_data.to_numpy().mean()
     
     copresence_data=misc_data[[keys[16],keys[17],keys[18]]]
@@ -111,13 +115,24 @@ def misc_plots():
     copresence_std=copresence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
     copresence_median=copresence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
     
-    ax = copresence_median.plot.bar(x='index',legend=False)
+    ax = copresence_mean.plot.bar(x='index',legend=False,yerr=copresence_std[0].values)
     ax.set_xlabel('Question')
-    ax.set_ylabel("Median rating")
+    ax.set_ylabel("Mean Rating and Std")
     
     copresence_data.to_numpy().mean()
     
-
+    pd_all=pd.DataFrame()
+    pd_all['Co-presence']=np.array([copresence_data.to_numpy().mean()])
+    pd_all['Presence']=np.array([ presence_data.to_numpy().mean()])
+    pd_all['Ownership']=np.array([ownership_data.to_numpy().mean()])
+    
+    yerr= np.array( [copresence_data.to_numpy().std(),presence_data.to_numpy().std(),ownership_data.to_numpy().std()])    
+    
+    ax =  pd_all.T.reset_index().plot.bar(x='index',legend=False,yerr=yerr,align='center', alpha=0.5, ecolor='black', capsize=10,rot=0)
+    plt.tight_layout()
+    ax.set_xlabel('Category')
+    ax.set_ylabel("Total mean rating and std")
+    
     g = sns.catplot(x="Trial", y="NForce", kind="bar", data=presence_data)
     g.set_ylabel("Gaze % ")
 
@@ -167,8 +182,25 @@ def plots():
     ax= sns.catplot(x="Condition", y="ForceNormalized", hue="Gender", kind="bar", data=data)
     ax= sns.catplot(x="Condition", y="NForce", hue="Gender", kind="bar", data=data)
     
+    ax= sns.catplot(x="Condition", y="RopeRealism", kind="bar", data=data)
+    sns.catplot(x="Condition", y="RopeRealism", kind="bar", data=data,hue='Gender')
 
     
+    ax= sns.catplot(x="Trial", y="RopeRealism", kind="bar", data=data)
+    sns.catplot(x="Trial", y="RopeRealism", kind="bar", data=data,hue='Gender')
+        
+    ax= sns.catplot(x="Condition", y="RopeOwnership", kind="bar",data=data)
+    ax= sns.catplot(x="Condition", y="RopeOwnership", kind="bar", data=data,hue='Gender',legend='Full')
+   
+    
+    ax= sns.catplot(x="Trial", y="RopeOwnership", kind="bar",data=data)
+    ax.legend()
+    ax= sns.catplot(x="Trial", y="RopeOwnership", kind="bar", data=data,hue='Gender')
+    
+    
+
+    
+
 def by_cond():
 
     sns.catplot(x="Condition", y="Challenge", kind="bar", data=data,estimator=np.median,hue='Gender')
@@ -218,7 +250,7 @@ def by_cond():
 
     
     sns.catplot(x="Condition", y="Trial", kind="bar", data=data[data['Trial'].isin([1,2,3])])
-    sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial'].isin([1,2,3])],hue='Gender').
+    sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial'].isin([1,2,3])],hue='Gender')
     
     
     sns.countplot(x="Condition", hue="Trial",data=data)
