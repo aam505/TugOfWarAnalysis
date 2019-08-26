@@ -67,11 +67,27 @@ data['NForce'] = data[['Pid', 'Force']].apply(norm_force, axis=1)
 data_stable_maxdif=data[data['MaxForceDif']<12] #3 users
 
 def misc_plots():
-    
+
     ratings=[1,2,3,4,5]
     #misc_data.groupby('VRUse').size().plot(kind='pie', figsize=(8, 8),autopct='%1.1f%%',startangle=90,shadow=False, labels=list(misc_data.groupby('VRUse').size().index))
     keys =  misc_data.keys()
     presence_data=misc_data[[keys[5],keys[6],keys[7],keys[8],keys[9]]]
+    presence_data=presence_data.rename(columns={keys[5]:'Q1',keys[6]:'Q2',keys[7]:'Q3',keys[8]:'Q4',keys[9]:'Q5'})
+    
+    sns.set(font_scale=1.5)    
+    ax= sns.catplot( kind="bar", data=presence_data,color='orange',ci='sd')
+    ax.set(xlabel='Question', ylabel='Mean Rating and Std')
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    
+    sns.set(font_scale=1.5)    
+    ax= sns.catplot( kind="bar", data=presence_data,hue='gender',ci='sd')
+    ax.set(xlabel='Question', ylabel='Mean Rating and Std')
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    
     
     presence_mean = presence_data.mean().reset_index()
     presence_std= presence_data.std().reset_index()
@@ -82,13 +98,21 @@ def misc_plots():
     presence_median=presence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
 
     presence_data.to_numpy().sum()
-    
+
+    sns.set(font_scale=1.5)    
     ax = presence_median.plot.bar(x='index',legend=False,yerr=presence_std[0].values)
     ax.set_xlabel('Question')
-    ax.set_ylabel("Mean Rating and Std")
-    plt.show()
+    ax.set_ylabel("Median Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
     
-     
+    sns.set(font_scale=1.5)    
+    ax = presence_mean.plot.bar(x='index',legend=False,yerr=presence_std[0].values)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+
     ownership_data=misc_data[[keys[10],keys[11],keys[12],keys[13],keys[14],keys[15]]]
 
     ownership_mean = ownership_data.mean().reset_index()
@@ -99,9 +123,19 @@ def misc_plots():
     ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
     ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
  
-    ax = ownership_median.plot.bar(x='index',legend=False)
+    sns.set(font_scale=1.5)    
+    ax = ownership_median.plot.bar(x='index',legend=False,yerr=ownership_std[0].values)
     ax.set_xlabel('Question')
-    ax.set_ylabel("Median Rating ")
+    ax.set_ylabel("Median Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    sns.set(font_scale=1.5)    
+    ax = ownership_mean.plot.bar(x='index',legend=False,yerr=ownership_std[0].values)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
     
     ownership_data.to_numpy().mean()
     
@@ -115,11 +149,22 @@ def misc_plots():
     copresence_std=copresence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
     copresence_median=copresence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
     
+    sns.set(font_scale=1.5)    
+    ax = copresence_median.plot.bar(x='index',legend=False,yerr=copresence_std[0].values)
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Median Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    sns.set(font_scale=1.5)    
     ax = copresence_mean.plot.bar(x='index',legend=False,yerr=copresence_std[0].values)
     ax.set_xlabel('Question')
     ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
     
     copresence_data.to_numpy().mean()
+    
     
     pd_all=pd.DataFrame()
     pd_all['Co-presence']=np.array([copresence_data.to_numpy().mean()])
@@ -128,6 +173,7 @@ def misc_plots():
     
     yerr= np.array( [copresence_data.to_numpy().std(),presence_data.to_numpy().std(),ownership_data.to_numpy().std()])    
     
+    sns.set(font_scale=1.5)    
     ax =  pd_all.T.reset_index().plot.bar(x='index',legend=False,yerr=yerr,align='center', alpha=0.5, ecolor='black', capsize=10,rot=0)
     plt.tight_layout()
     ax.set_xlabel('Category')
@@ -136,17 +182,186 @@ def misc_plots():
     g = sns.catplot(x="Trial", y="NForce", kind="bar", data=presence_data)
     g.set_ylabel("Gaze % ")
 
-    
-def gaze_plots():
-    c=pd.DataFrame(misc_data['GazeTarget'].value_counts())
 
-    c=pd.DataFrame(gaze_data['GazeTarget'].value_counts())
-    c['GazeTarget']=c['GazeTarget']/c['GazeTarget'].sum()
+
+def misc_plots_gender_female():
+
+    ratings=[1,2,3,4,5]
+    #misc_data.groupby('VRUse').size().plot(kind='pie', figsize=(8, 8),autopct='%1.1f%%',startangle=90,shadow=False, labels=list(misc_data.groupby('VRUse').size().index))
+    keys =  misc_data.keys()
+    presence_data=misc_data[misc_data['Gender']=='Female'][[keys[5],keys[6],keys[7],keys[8],keys[9]]]
+    presence_data=presence_data.rename(columns={keys[5]:'Q1',keys[6]:'Q2',keys[7]:'Q3',keys[8]:'Q4',keys[9]:'Q5'})
     
+    
+    presence_mean = presence_data.mean().reset_index()
+    presence_std= presence_data.std().reset_index()
+    presence_median = presence_data.median().reset_index()
+    
+    presence_mean=presence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_std=presence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_median=presence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+
+    presence_data.to_numpy().sum()
+
+    sns.set(font_scale=1.5)    
+    ax = presence_median.plot.bar(x='index',legend=False,yerr=presence_std[0].values,color='LightBlue')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Median Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    sns.set(font_scale=1.5)    
+    ax = presence_mean.plot.bar(x='index',legend=False,yerr=presence_std[0].values,color='LightBlue')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+
+    ownership_data=misc_data[misc_data['Gender']=='Female'][[keys[10],keys[11],keys[12],keys[13],keys[14],keys[15]]]
+
+    ownership_mean = ownership_data.mean().reset_index()
+    ownership_std= ownership_data.std().reset_index()
+    ownership_median = ownership_data.median().reset_index()
+    
+    ownership_mean=ownership_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+ 
+    sns.set(font_scale=1.5)    
+    ax = ownership_mean.plot.bar(x='index',legend=False,yerr=ownership_std[0].values,color='LightBlue')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    ownership_data.to_numpy().mean()
+    
+    copresence_data=misc_data[misc_data['Gender']=='Female'][[keys[16],keys[17],keys[18]]]
+
+    copresence_mean = copresence_data.mean().reset_index()
+    copresence_std= copresence_data.std().reset_index()
+    copresence_median = copresence_data.median().reset_index()
+    
+    copresence_mean=copresence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_std=copresence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_median=copresence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    
+    sns.set(font_scale=1.5)    
+    ax = copresence_mean.plot.bar(x='index',legend=False,yerr=copresence_std[0].values,color='LightBlue')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    copresence_data.to_numpy().mean()
+    
+    
+    pd_all=pd.DataFrame()
+    pd_all['Co-presence']=np.array([copresence_data.to_numpy().mean()])
+    pd_all['Presence']=np.array([ presence_data.to_numpy().mean()])
+    pd_all['Ownership']=np.array([ownership_data.to_numpy().mean()])
+    
+    yerr= np.array( [copresence_data.to_numpy().std(),presence_data.to_numpy().std(),ownership_data.to_numpy().std()])    
+    
+    sns.set(font_scale=1.5)    
+    ax =  pd_all.T.reset_index().plot.bar(x='index',legend=False,yerr=yerr,align='center', alpha=0.5, ecolor='black', capsize=10,rot=0,color='LightBlue')
+    plt.tight_layout()
+    ax.set_xlabel('Category')
+    ax.set_ylabel("Total mean rating and std")
+
+
+  
+def misc_plots_gender_male():
+
+    ratings=[1,2,3,4,5]
+    #misc_data.groupby('VRUse').size().plot(kind='pie', figsize=(8, 8),autopct='%1.1f%%',startangle=90,shadow=False, labels=list(misc_data.groupby('VRUse').size().index))
+    keys =  misc_data.keys()
+    presence_data=misc_data[misc_data['Gender']=='Male'][[keys[5],keys[6],keys[7],keys[8],keys[9]]]
+    presence_data=presence_data.rename(columns={keys[5]:'Q1',keys[6]:'Q2',keys[7]:'Q3',keys[8]:'Q4',keys[9]:'Q5'})
+    
+    
+    presence_mean = presence_data.mean().reset_index()
+    presence_std= presence_data.std().reset_index()
+    presence_median = presence_data.median().reset_index()
+    
+    presence_mean=presence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_std=presence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+    presence_median=presence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5'},columns={'index':'q'}).reset_index()
+
+    presence_data.to_numpy().sum()
+    
+    sns.set(font_scale=1.5)    
+    ax = presence_mean.plot.bar(x='index',legend=False,yerr=presence_std[0].values,color='orange')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+
+    ownership_data=misc_data[misc_data['Gender']=='Male'][[keys[10],keys[11],keys[12],keys[13],keys[14],keys[15]]]
+
+    ownership_mean = ownership_data.mean().reset_index()
+    ownership_std= ownership_data.std().reset_index()
+    ownership_median = ownership_data.median().reset_index()
+    
+    ownership_mean=ownership_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_std=ownership_std.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+    ownership_median=ownership_median.rename(index={0: 'Q1',1:'Q2',2:'Q3',3:'Q4',4:'Q5',5:'Q6'},columns={'index':'q'}).reset_index()
+ 
+
+    
+    sns.set(font_scale=1.5)    
+    ax = ownership_mean.plot.bar(x='index',legend=False,yerr=ownership_std[0].values,color='orange')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    ownership_data.to_numpy().mean()
+    
+    copresence_data=misc_data[misc_data['Gender']=='Male'][[keys[16],keys[17],keys[18]]]
+
+    copresence_mean = copresence_data.mean().reset_index()
+    copresence_std= copresence_data.std().reset_index()
+    copresence_median = copresence_data.median().reset_index()
+    
+    copresence_mean=copresence_mean.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_std=copresence_std.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    copresence_median=copresence_median.rename(index={0: 'Q1',1:'Q2',2:'Q3'},columns={'index':'q'}).reset_index()
+    
+    sns.set(font_scale=1.5)    
+    ax = copresence_mean.plot.bar(x='index',legend=False,yerr=copresence_std[0].values,color='orange')
+    ax.set_xlabel('Question')
+    ax.set_ylabel("Mean Rating and Std")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    
+    copresence_data.to_numpy().mean()
+    
+    
+    pd_all=pd.DataFrame()
+    pd_all['Co-presence']=np.array([copresence_data.to_numpy().mean()])
+    pd_all['Presence']=np.array([ presence_data.to_numpy().mean()])
+    pd_all['Ownership']=np.array([ownership_data.to_numpy().mean()])
+    
+    yerr= np.array( [copresence_data.to_numpy().std(),presence_data.to_numpy().std(),ownership_data.to_numpy().std()])    
+    
+    sns.set(font_scale=1.5)    
+    ax =  pd_all.T.reset_index().plot.bar(x='index',legend=False,yerr=yerr,align='center', alpha=0.5, ecolor='black', capsize=10,rot=0,color='orange')
+    plt.tight_layout()
+    ax.set_xlabel('Category')
+    ax.set_ylabel("Total mean rating and std")
+
+  
+def gaze_plots():
+    c=pd.DataFrame(gaze_data['GazeTarget'].value_counts())
+    c['GazeTarget']=c['GazeTarget']/(c['GazeTarget'].sum())
+    
+    sns.set(font_scale=2)  
     f, ax = plt.subplots()
-    c.plot(kind='pie', subplots=True, figsize=(8, 8),labels=None,ax=ax)
+    c.plot(kind='pie', subplots=True, figsize=(8, 8),labels=None,ax=ax, 
+           autopct='%1.0f%%', pctdistance=1.2, labeldistance=2, rot=0)
     ax.set_ylabel("Gaze % ")
-    ax.legend(bbox_to_anchor=(1, 1),labels=c.index)   
+    ax.legend(bbox_to_anchor=(1.2, 1),labels=c.index)   
     
     sns.set_color_codes("pastel")
     sns.barplot(x="GazeTarget", y="index",data= c, label="Total", color="b")
@@ -198,8 +413,18 @@ def plots():
     ax= sns.catplot(x="Trial", y="RopeOwnership", kind="bar", data=data,hue='Gender')
     
     
-
+    sns.lineplot(x='Pid',y='MaxForceDif', data=data_stable_maxdif)
     
+    sns.catplot(x="Pid", y="MaxForceDif", kind="bar",hue="Gender",data=data_stable_maxdif)
+    
+    sns.catplot(x="Pid", y="MaxForceDif", kind="bar",color="purple",data=data_stable_maxdif)
+
+
+    ax = sns.scatterplot(x="Pid", y="MaxForceDif", hue="Gender", data=data_stable_maxdif)
+    ax = sns.scatterplot(x="Pid", y="MaxForceDif",   data=data_stable_maxdif)
+        
+    
+    sns.regplot(x=data_stable_maxdif["Pid"], y=data_stable_maxdif["MaxForceDif"])
 
 def by_cond():
 
@@ -216,7 +441,7 @@ def by_cond():
     sns.catplot(x="Trial", y="PPull", kind="bar", data=data,estimator=np.median,hue='Gender')
     sns.catplot(x="Trial", y="PPull", kind="bar", data=data,hue='Gender')
     
-    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data)
+    sns.catplot(x="Condition", y="Challenge", kind="bar", data=data,hue='Gender')
     sns.catplot(x="Condition", y="PPull", kind="bar", data=data)
     
         
@@ -248,13 +473,29 @@ def by_cond():
     ax= sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial']==1],hue='Gender')
     ax= sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial']==1])
 
+    ax= sns.catplot(x="Condition", y="NForce", kind="bar", data=data[data['Trial']==1])
+    
+    ax= sns.catplot(x="Condition", y="ForceNormalized", kind="bar", data=data[data['Trial']==1],hue='Gender')
+
+
+    ax= sns.catplot(x="Condition", y="ForceNormalized", kind="bar", data=data[data['Trial']==1],hue='Gender')
+    
+    
+    sns.catplot(x="Condition", y="ForceNormalized", kind="bar", data=data[data['Trial'].isin([1,2,3])],hue='Gender')
     
     sns.catplot(x="Condition", y="Trial", kind="bar", data=data[data['Trial'].isin([1,2,3])])
     sns.catplot(x="Condition", y="PPull", kind="bar", data=data[data['Trial'].isin([1,2,3])],hue='Gender')
     
     
-    sns.countplot(x="Condition", hue="Trial",data=data)
+    sns.countplot(x="Trial", hue="Condition",data=data)
+
+    sns.set(font_scale=3)
+    g=sns.countplot(palette="RdBu_r",x="Trial", hue="Condition",data=data)
+    g.legend( bbox_to_anchor=(0.94, 0.6))
+
+
     
+    sns.set(font_scale=1.5)
     sns.countplot(x="Condition", hue="Trial",data=data[data['Gender']=='female'])
     sns.countplot(x="Trial", hue="Condition",data=data)
     sns.countplot(x="Condition", y="Trial", kind="bar", data=data,hue='Gender')
